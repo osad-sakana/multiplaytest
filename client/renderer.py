@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 import math
+import os
 import time
 from typing import Dict
 
@@ -13,12 +15,18 @@ class GameRenderer:
         self.screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Multiplayer Game")
 
-        # Load Japanese font
+        # Load Japanese font with absolute path
+        font_path = os.path.join(os.path.dirname(__file__), "PixelMplus12-Regular.ttf")
         try:
-            self.font = pygame.font.Font("PixelMplus12-Regular.ttf", 36)
-            self.small_font = pygame.font.Font("PixelMplus12-Regular.ttf", 24)
-            self.tiny_font = pygame.font.Font("PixelMplus12-Regular.ttf", 18)
-        except FileNotFoundError:
+            if os.path.exists(font_path):
+                self.font = pygame.font.Font(font_path, 36)
+                self.small_font = pygame.font.Font(font_path, 24)
+                self.tiny_font = pygame.font.Font(font_path, 18)
+                print(f"Japanese font loaded successfully: {font_path}")
+            else:
+                raise FileNotFoundError(f"Font file not found: {font_path}")
+        except (FileNotFoundError, OSError) as e:
+            print(f"Failed to load Japanese font: {e}")
             # Fallback to default font if Japanese font not found
             self.font = pygame.font.Font(None, 36)
             self.small_font = pygame.font.Font(None, 24)

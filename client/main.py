@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pygame
 from game_client import AsyncGameClient
 from renderer import GameRenderer
