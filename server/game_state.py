@@ -46,6 +46,12 @@ class GameManager:
                     player.respawn_ready = True
                     continue
 
+            # Update effect timers
+            if player.collision_effect_time > 0:
+                player.collision_effect_time = max(0, player.collision_effect_time - 1/60)
+            if player.boost_effect_time > 0:
+                player.boost_effect_time = max(0, player.boost_effect_time - 1/60)
+
             # Apply friction
             player.velocity_x *= self.friction
             player.velocity_y *= self.friction

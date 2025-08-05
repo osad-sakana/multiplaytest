@@ -5,7 +5,10 @@
       "Bash(poetry run:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(docker-compose:*)"
     ],
     "deny": []
   }

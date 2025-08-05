@@ -116,12 +116,14 @@ class GameRenderer:
 
         # Collision effect - screen shake and particles
         if collision_effect_time > 0:
+            print(f"Rendering collision effect: {collision_effect_time}")
             self._render_collision_effect(
                 x, y, player_size, collision_effect_time, color
             )
 
         # Boost effect - glowing aura and particles
         if boost_effect_time > 0:
+            print(f"Rendering boost effect: {boost_effect_time}")
             self._render_boost_effect(x, y, player_size, boost_effect_time, color)
 
         # Add velocity trail effect
@@ -538,18 +540,18 @@ class GameRenderer:
         # Draw explosion particles
         import random
 
-        for i in range(int(10 * intensity)):
+        for i in range(int(20 * intensity)):  # More particles
             particle_x = (
                 x
                 + size // 2
-                + random.randint(-int(size * intensity), int(size * intensity))
+                + random.randint(-int(size * intensity * 2), int(size * intensity * 2))  # Wider spread
             )
             particle_y = (
                 y
                 + size // 2
-                + random.randint(-int(size * intensity), int(size * intensity))
+                + random.randint(-int(size * intensity * 2), int(size * intensity * 2))
             )
-            particle_size = random.randint(2, int(6 * intensity))
+            particle_size = random.randint(3, int(8 * intensity))  # Bigger particles
 
             # Vary particle colors
             particle_color = (
@@ -563,13 +565,13 @@ class GameRenderer:
             )
 
         # Draw impact rings
-        for ring in range(3):
-            ring_radius = int((size + ring * 10) * intensity)
-            ring_alpha = int(255 * intensity * (1 - ring * 0.3))
+        for ring in range(5):  # More rings
+            ring_radius = int((size + ring * 15) * intensity)  # Bigger rings
+            ring_alpha = int(255 * intensity * (1 - ring * 0.2))
             if ring_alpha > 0:
-                ring_color = (*color, ring_alpha)
+                ring_width = max(1, int(4 * intensity))  # Thicker rings
                 pygame.draw.circle(
-                    self.screen, color, (x + size // 2, y + size // 2), ring_radius, 2
+                    self.screen, color, (x + size // 2, y + size // 2), ring_radius, ring_width
                 )
 
     def _render_boost_effect(
