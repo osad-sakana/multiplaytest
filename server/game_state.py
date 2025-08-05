@@ -43,6 +43,8 @@ class GameManager:
                 if player.respawn_cooldown > current_time:
                     continue
                 else:
+                    if not player.respawn_ready:
+                        print(f"Player {player.name} is now ready to respawn!")
                     player.respawn_ready = True
                     continue
 
@@ -171,8 +173,14 @@ class GameManager:
 
         # Handle respawn input
         if player.is_dead and player_input.action == "respawn":
+            print(f"Respawn input received for {player.name}, respawn_ready: {player.respawn_ready}")
             if player.respawn_ready:
+                print(f"Respawning player {player.name}")
                 await self.respawn_player(player)
+            else:
+                current_time = time.time()
+                remaining = player.respawn_cooldown - current_time
+                print(f"Player {player.name} not ready to respawn. Remaining cooldown: {remaining:.1f}s")
             return
 
         # Ignore movement input if player is dead
