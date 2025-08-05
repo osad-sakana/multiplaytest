@@ -19,6 +19,8 @@ class Player(BaseModel):
     is_dead: bool = False
     respawn_cooldown: float = 0.0
     respawn_ready: bool = True
+    collision_effect_time: float = 0.0
+    boost_effect_time: float = 0.0
 
     def __init__(self, **data):
         if "id" not in data:

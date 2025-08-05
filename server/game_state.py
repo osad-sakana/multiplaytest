@@ -14,7 +14,9 @@ class GameManager:
         self.connected_clients: Dict[str, any] = {}
         self.base_speed = 1.5  # Reduced from 3.0
         self.boost_multiplier = 2.0
-        self.stamina_drain_rate = 30.0  # stamina per second when boosting
+        self.stamina_drain_rate = (
+            33.3  # stamina per second when boosting (empties in 3s)
+        )
         self.stamina_regen_rate = 20.0  # stamina per second when not boosting
         self.friction = 0.92  # Reduced from 0.95 for more friction
         self.max_velocity = 8.0  # Max velocity when boosting
@@ -106,6 +108,10 @@ class GameManager:
                     player2.velocity_x += push_x * push_velocity
                     player2.velocity_y += push_y * push_velocity
 
+                    # Add collision effect
+                    player1.collision_effect_time = 0.3  # 0.3 seconds
+                    player2.collision_effect_time = 0.3
+
     async def add_player(self, websocket, player_name: str) -> Player:
         # Start game loop if not already running
         if self.game_loop_task is None:
@@ -180,6 +186,8 @@ class GameManager:
             force *= self.boost_multiplier
             # Drain stamina
             player.stamina = max(0, player.stamina - self.stamina_drain_rate / 60)
+            # Add boost effect
+            player.boost_effect_time = 0.1  # Short boost effect
 
         # Apply force based on direction
         if direction == "up":

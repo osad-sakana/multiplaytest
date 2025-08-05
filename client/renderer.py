@@ -101,6 +101,8 @@ class GameRenderer:
         is_dead = player_data.get("is_dead", False)
         respawn_cooldown = player_data.get("respawn_cooldown", 0)
         respawn_ready = player_data.get("respawn_ready", True)
+        collision_effect_time = player_data.get("collision_effect_time", 0)
+        boost_effect_time = player_data.get("boost_effect_time", 0)
 
         # Don't render dead players visually on stage
         if is_dead:
@@ -111,6 +113,16 @@ class GameRenderer:
 
         # Draw player rectangle
         player_rect = pygame.Rect(x, y, player_size, player_size)
+
+        # Collision effect - screen shake and particles
+        if collision_effect_time > 0:
+            self._render_collision_effect(
+                x, y, player_size, collision_effect_time, color
+            )
+
+        # Boost effect - glowing aura and particles
+        if boost_effect_time > 0:
+            self._render_boost_effect(x, y, player_size, boost_effect_time, color)
 
         # Add velocity trail effect
         velocity_magnitude = math.sqrt(velocity_x**2 + velocity_y**2)
@@ -515,6 +527,140 @@ class GameRenderer:
                 )
                 progress_color = self.GREEN if progress >= 1.0 else self.YELLOW
                 pygame.draw.rect(self.screen, progress_color, progress_rect)
+
+    def _render_collision_effect(
+        self, x: int, y: int, size: int, effect_time: float, color
+    ):
+        """Render collision effect - particles and screen shake"""
+        # Calculate effect intensity (stronger at the beginning)
+        intensity = effect_time / 0.3
+
+        # Draw explosion particles
+        import random
+
+        for i in range(int(10 * intensity)):
+            particle_x = (
+                x
+                + size // 2
+                + random.randint(-int(size * intensity), int(size * intensity))
+            )
+            particle_y = (
+                y
+                + size // 2
+                + random.randint(-int(size * intensity), int(size * intensity))
+            )
+            particle_size = random.randint(2, int(6 * intensity))
+
+            # Vary particle colors
+            particle_color = (
+                min(255, color[0] + random.randint(-50, 50)),
+                min(255, color[1] + random.randint(-50, 50)),
+                min(255, color[2] + random.randint(-50, 50)),
+            )
+
+            pygame.draw.circle(
+                self.screen, particle_color, (particle_x, particle_y), particle_size
+            )
+
+        # Draw impact rings
+        for ring in range(3):
+            ring_radius = int((size + ring * 10) * intensity)
+            ring_alpha = int(255 * intensity * (1 - ring * 0.3))
+            if ring_alpha > 0:
+                ring_color = (*color, ring_alpha)
+                pygame.draw.circle(
+                    self.screen, color, (x + size // 2, y + size // 2), ring_radius, 2
+                )
+
+    def _render_boost_effect(
+        self, x: int, y: int, size: int, effect_time: float, color
+    ):
+        """Render boost effect - glowing aura and energy particles"""
+        import random
+
+        # Calculate effect intensity
+        intensity = effect_time / 0.1
+
+        # Draw glowing aura
+        aura_radius = int(size * 0.8 * intensity)
+        aura_color = (*color, int(50 * intensity))
+
+        # Create multiple aura layers for glow effect
+        for layer in range(3):
+            layer_radius = aura_radius + layer * 5
+            layer_alpha = int(30 * intensity * (1 - layer * 0.3))
+            if layer_alpha > 0:
+                # Create surface for alpha blending
+                aura_surface = pygame.Surface((layer_radius * 2, layer_radius * 2))
+                aura_surface.set_alpha(layer_alpha)
+                pygame.draw.circle(
+                    aura_surface, color, (layer_radius, layer_radius), layer_radius
+                )
+                self.screen.blit(
+                    aura_surface,
+                    (x + size // 2 - layer_radius, y + size // 2 - layer_radius),
+                )
+
+        # Draw energy particles around player
+        for i in range(int(8 * intensity)):
+            angle = (time.time() * 10 + i * 45) % 360
+            particle_distance = size * 0.6
+            particle_x = (
+                x + size // 2 + math.cos(math.radians(angle)) * particle_distance
+            )
+            particle_y = (
+                y + size // 2 + math.sin(math.radians(angle)) * particle_distance
+            )
+
+            particle_color = (
+                min(255, color[0] + 100),
+                min(255, color[1] + 100),
+                min(255, color[2] + 100),
+            )
+
+            pygame.draw.circle(
+                self.screen, particle_color, (int(particle_x), int(particle_y)), 3
+            )
+
+    def _render_stamina_gauge(self, x: int, y: int, stamina: float, max_stamina: float):
+        """Render stamina gauge bar"""
+        gauge_width = 150
+        gauge_height = 12
+
+        # Background
+        bg_rect = pygame.Rect(x, y, gauge_width, gauge_height)
+        pygame.draw.rect(self.screen, self.DARK_GRAY, bg_rect)
+        pygame.draw.rect(self.screen, self.WHITE, bg_rect, 2)
+
+        # Stamina bar
+        if max_stamina > 0:
+            stamina_ratio = stamina / max_stamina
+            stamina_width = int(gauge_width * stamina_ratio)
+
+            # Color changes based on stamina level
+            if stamina_ratio > 0.6:
+                stamina_color = self.GREEN
+            elif stamina_ratio > 0.3:
+                stamina_color = self.YELLOW
+            else:
+                stamina_color = self.RED
+
+            if stamina_width > 0:
+                stamina_rect = pygame.Rect(
+                    x + 2, y + 2, stamina_width - 4, gauge_height - 4
+                )
+                pygame.draw.rect(self.screen, stamina_color, stamina_rect)
+
+                # Add glow effect when stamina is low
+                if stamina_ratio < 0.3:
+                    glow_alpha = int(100 * math.sin(time.time() * 8))
+                    if glow_alpha > 0:
+                        glow_surface = pygame.Surface(
+                            (stamina_width - 4, gauge_height - 4)
+                        )
+                        glow_surface.set_alpha(glow_alpha)
+                        glow_surface.fill(self.RED)
+                        self.screen.blit(glow_surface, (x + 2, y + 2))
 
     def quit(self):
         pygame.quit()
