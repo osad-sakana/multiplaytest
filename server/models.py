@@ -1,7 +1,9 @@
-from pydantic import BaseModel
-from typing import Dict, List, Tuple
-import uuid
 import random
+import uuid
+from typing import Dict, Tuple
+
+from pydantic import BaseModel
+
 
 class Player(BaseModel):
     id: str
@@ -14,15 +16,16 @@ class Player(BaseModel):
     dash_cooldown: float = 0.0
 
     def __init__(self, **data):
-        if 'id' not in data:
-            data['id'] = str(uuid.uuid4())
-        if 'color' not in data:
-            data['color'] = (
+        if "id" not in data:
+            data["id"] = str(uuid.uuid4())
+        if "color" not in data:
+            data["color"] = (
                 random.randint(50, 255),
                 random.randint(50, 255),
-                random.randint(50, 255)
+                random.randint(50, 255),
             )
         super().__init__(**data)
+
 
 class GameState(BaseModel):
     players: Dict[str, Player] = {}
@@ -30,10 +33,12 @@ class GameState(BaseModel):
     field_height: int = 600
     player_size: int = 30
 
+
 class PlayerInput(BaseModel):
     player_id: str
     action: str  # "move", "dash"
     direction: str = None  # "up", "down", "left", "right"
+
 
 class GameUpdate(BaseModel):
     type: str  # "player_update", "player_joined", "player_left", "respawn"
